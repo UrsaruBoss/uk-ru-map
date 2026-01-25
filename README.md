@@ -1,5 +1,7 @@
 # Ukraine–Russia Conflict Map (Automated & Interactive)
 
+### 🔴 [Click here to open Live Map](https://ursaruboss.github.io/uk-ru-map/)
+
 ## Preview
 
 <p align="center">
@@ -103,7 +105,7 @@ python scripts/02_filter_ucdp.py
 python scripts/10_build_map.py
 ```
 
-Open: `outputs/map.html`
+Open: `outputs/index.html`
 
 ## Running with Docker
 
@@ -121,7 +123,7 @@ docker compose run --rm war-map /bin/bash -c "python scripts/00_update_front_kmz
 
 Output location:
 
-* `outputs/map.html`
+* `outputs/index.html`
 
 ## Interactive Features
 
@@ -161,7 +163,7 @@ Panels are collapsible and store UI state in `localStorage`.
 
 Main artifact:
 
-* `outputs/map.html`
+* `outputs/index.html`
 
 This file is self-contained and can be shared/opened without a backend server.
 

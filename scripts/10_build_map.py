@@ -8,7 +8,7 @@ Inputs:
 - assets/geo/*
 
 Output:
-- outputs/map.html
+- outputs/index.html
 """
 # 10_build_map.py
 
