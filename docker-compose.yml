@@ -1,0 +1,10 @@
+services:
+  war-map:
+    build: .
+    volumes:
+      - ./assets:/app/assets
+      - ./data:/app/data
+      - ./outputs:/app/outputs
+      - ./scripts:/app/scripts 
+
+    command: ["scripts/10_build_map.py"]

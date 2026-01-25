@@ -1,0 +1,14 @@
+__pycache__/
+*.pyc
+.venv/
+.env
+.DS_Store
+
+assets/doc.kml
+assets/images/
+assets/latest.kmz
+
+data/raw/
+data/processed/
+
+outputs/

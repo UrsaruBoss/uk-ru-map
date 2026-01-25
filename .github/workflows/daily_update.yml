@@ -1,0 +1,46 @@
+name: Daily Map Update
+
+on:
+  schedule:
+    - cron: '0 6 * * *'
+  workflow_dispatch: 
+
+permissions:
+  contents: write
+
+jobs:
+  build-and-deploy:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v3
+
+      - name: Set up Python
+        uses: actions/setup-python@v4
+        with:
+          python-version: '3.10'
+
+      - name: Install dependencies
+        run: |
+          pip install -r requirements.txt
+
+      - name: 1. Update Frontline (Download KMZ)
+        run: python scripts/00_update_front_kmz.py
+
+      - name: 2. Fetch UCDP Events
+        run: python scripts/01_fetch_ucdp.py
+
+      - name: 3. Filter UCDP Events
+        run: python scripts/02_filter_ucdp.py
+
+      - name: 4. Fetch Equipment Stats (Oryx)
+        run: python scripts/03_fetch_equipment.py
+
+      - name: 5. Build Map HTML
+        run: python scripts/10_build_map.py
+
+      - name: Deploy to GitHub Pages
+        uses: peaceiris/actions-gh-pages@v3
+        with:
+          github_token: ${{ secrets.GITHUB_TOKEN }}
+          publish_dir: ./outputs
