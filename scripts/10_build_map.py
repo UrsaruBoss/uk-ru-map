@@ -26,7 +26,7 @@ except Exception:
 # --- CONFIG ---
 KML_FILE = os.path.join("assets", "doc.kml")
 IMAGES_FOLDER = os.path.join("assets", "images")
-OUTPUT_MAP = os.path.join("outputs", "map.html")
+OUTPUT_MAP = os.path.join("outputs", "index.html")
 
 # Keep only "live-ish" relevant folders (name contains any of these tokens)
 # When True, process placemarks in all folders (useful for debugging / one-off runs)
