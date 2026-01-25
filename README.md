@@ -1,4 +1,11 @@
-# Ukraine–Russia Conflict Map (KML + UCDP)
+# Ukraine–Russia Conflict Map (Automated & Interactive)
+
+## Preview
+
+<p align="center">
+  <img src="assets/readme/preview_map.png" width="60%" alt="Main Map Interface" />
+  <img src="assets/readme/preview_popup.png" width="35%" alt="Event Detail Popup" />
+</p>
 
 ## Overview
 
@@ -14,60 +21,55 @@ The focus is **data engineering + visualization**: parsing, filtering, normalizi
 
 * **`outputs/map.html`**: final interactive map (open locally in a browser)
 * **Custom UI panels** inside the map:
-
   * War stats panel (top-left)
   * UCDP event filters (top-right)
   * Legend + Layers dock (bottom-right)
 
-## Data Inputs
+## Data Inputs & Sources
 
-Expected input locations (you can change paths in scripts if needed):
+The pipeline automatically fetches data from these sources (configurable in scripts):
 
-* **KML tactical dataset**
+* **KML Tactical Dataset**
+  * Source: [UA Control Map Backups](https://github.com/owlmaps/UAControlMapBackups)
+  * URL: `https://raw.githubusercontent.com/owlmaps/UAControlMapBackups/master/latest.kmz`
+  * Local files: `assets/doc.kml` & `assets/images/`
 
-  * `assets/doc.kml`
-  * `assets/images/` (icons referenced by KML styles)
+* **UCDP Events**
+  * Source: UCDP GED API v25.1
+  * Processed file: `data/processed/ucdp_live_data.json`
 
-* **Borders (optional, for country outlines)**
+* **War Stats Snapshot**
+  * Equipment Source: [Oryx](https://www.oryxspioenkop.com/) (Visually confirmed)
+  * UA Personnel Source: [UALosses](https://ualosses.org/) (Documented deaths)
+  * RU Personnel Source: [2022-Ukraine-Russia-War-Dataset](https://github.com/PetroIvaniuk/2022-Ukraine-Russia-War-Dataset)
+  * RU Data URL: `https://raw.githubusercontent.com/PetroIvaniuk/2022-Ukraine-Russia-War-Dataset/main/data/russia_losses_personnel.json`
+  * Processed file: `data/processed/war_stats.json`
 
+* **Borders (optional)**
   * `assets/geo/ne_110m_admin_0_countries.*` (Natural Earth shapefile)
-
-* **UCDP events (processed GeoJSON)**
-
-  * `data/processed/ucdp_live_data.json` (GeoJSON FeatureCollection preferred)
-
-* **War stats snapshot (processed JSON)**
-
-  * `data/processed/war_stats.json`
 
 ## Scripts
 
 This project is designed as a small pipeline. Typical structure:
 
-### 00–09: Data gather / prep (optional but recommended)
+### 00–09: Data gather / prep
 
 These scripts produce the processed JSON files used by the map builder.
 
-* **`scripts/00_fetch_ucdp.py`**
-  Downloads or refreshes UCDP event data and exports a normalized GeoJSON FeatureCollection.
-  Output:
-
-  * `data/processed/ucdp_live_data.json`
-
-* **`scripts/01_build_war_stats.py`**
-  Produces the snapshot stats panel dataset (personnel + equipment totals and category breakdown).
-  Output:
-
-  * `data/processed/war_stats.json`
-
-> If you already have these outputs, you can skip the gather scripts.
+* **`scripts/00_update_front_kmz.py`**
+  Downloads the latest KMZ frontline map from the source URL and extracts assets.
+* **`scripts/01_fetch_ucdp.py`**
+  Downloads or refreshes UCDP event data (raw JSON).
+* **`scripts/02_filter_ucdp.py`**
+  Cleans, filters, and normalizes the raw UCDP data into a map-friendly format.
+* **`scripts/03_fetch_equipment.py`**
+  Scrapes and produces the snapshot stats panel dataset (personnel + equipment totals).
 
 ### 10: Build map (main step)
 
 * **`scripts/10_build_map.py`**
   Parses the KML, filters folders, classifies features, builds layers, injects UI, and writes the final HTML.
   Output:
-
   * `outputs/map.html`
 
 ## Pipeline: Quick Start
@@ -84,39 +86,40 @@ source .venv/bin/activate
 pip install -r requirements.txt
 ```
 
-### 2) Ensure inputs exist
+### 2) Run the pipeline
 
-* `assets/doc.kml`
-* `assets/images/` (optional icons)
-* `assets/geo/ne_110m_admin_0_countries.*` (optional borders)
-* `data/processed/ucdp_live_data.json` (UCDP events)
-* `data/processed/war_stats.json` (stats panel)
-
-### 3) Build the map
+Since the scripts are set up to fetch data automatically:
 
 ```bash
+# 1. Fetch Data
+python scripts/00_update_front_kmz.py
+python scripts/01_fetch_ucdp.py
+python scripts/03_fetch_equipment.py
+
+# 2. Process Data
+python scripts/02_filter_ucdp.py
+
+# 3. Build Map
 python scripts/10_build_map.py
 ```
 
-Open:
-
-* `outputs/map.html`
+Open: `outputs/map.html`
 
 ## Running with Docker
 
-Build:
+Build the image:
 
 ```bash
 docker compose build
 ```
 
-Run map build:
+Run the full pipeline (Fetch data → Process → Build map):
 
 ```bash
-docker compose run --rm map python scripts/10_build_map.py
+docker compose run --rm war-map /bin/bash -c "python scripts/00_update_front_kmz.py && python scripts/01_fetch_ucdp.py && python scripts/03_fetch_equipment.py && python scripts/02_filter_ucdp.py && python scripts/10_build_map.py"
 ```
 
-Output:
+Output location:
 
 * `outputs/map.html`
 

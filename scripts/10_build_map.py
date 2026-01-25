@@ -882,9 +882,9 @@ def add_ucdp_events_layer(m, ucdp_json_path=None):
     return fg_ucdp, fg_var
 
 
-
 def add_ucdp_filter_panel(m, fg_var):
     map_var = m.get_name()
+    fg_var_json = json.dumps(fg_var) # Ensure safe JS string
 
     html = f"""
     <style>
@@ -940,7 +940,7 @@ def add_ucdp_filter_panel(m, fg_var):
       }}
       #ucdpFilter .btn:active {{ transform: translateY(1px); }}
 
-      #ucdpFilter .pill {{
+      #ucdpFilter .dock-pill {{
         display:inline-block;
         padding: 3px 8px;
         border-radius: 999px;
@@ -952,7 +952,7 @@ def add_ucdp_filter_panel(m, fg_var):
         cursor:pointer;
         user-select:none;
       }}
-      #ucdpFilter .pill:hover {{ opacity: 1; }}
+      #ucdpFilter .dock-pill:hover {{ opacity: 1; }}
 
       #ucdpFilter.ucdp-collapsed .body {{ display:none; }}
 
@@ -980,10 +980,10 @@ def add_ucdp_filter_panel(m, fg_var):
         </div>
 
         <div style="display:flex; gap:8px; flex-wrap:wrap; margin-bottom:8px;">
-<div class="dock-pill" data-range="7">Last 7d</div>
-<div class="dock-pill" data-range="30">Last 30d</div>
-<div class="dock-pill" data-range="90">Last 90d</div>
-<div class="dock-pill" id="ucdpAll">All</div>
+          <div class="dock-pill" data-range="7">Last 7d</div>
+          <div class="dock-pill" data-range="30">Last 30d</div>
+          <div class="dock-pill" data-range="90">Last 90d</div>
+          <div class="dock-pill" id="ucdpAll">All</div>
         </div>
 
         <div class="row"><span class="lbl">From</span><input id="ucdpFrom" type="date" /></div>
@@ -1004,8 +1004,8 @@ def add_ucdp_filter_panel(m, fg_var):
         </div>
 
         <div style="display:flex; gap:8px; margin-top:10px;">
-<div class="dock-btn" id="ucdpApply">Apply</div>
-<div class="dock-btn" id="ucdpReset">Reset</div>
+          <div class="dock-btn" id="ucdpApply">Apply</div>
+          <div class="dock-btn" id="ucdpReset">Reset</div>
         </div>
 
         <div id="ucdpAbout">
@@ -1271,14 +1271,15 @@ def add_ucdp_filter_panel(m, fg_var):
             buildLayer();
           }});
 
-          // quick pills
-          Array.from(document.querySelectorAll("#ucdpFilter .pill[data-range]")).forEach(function(el) {{
+          // quick pills - CORRECTED SELECTOR HERE
+          Array.from(document.querySelectorAll("#ucdpFilter .dock-pill[data-range]")).forEach(function(el) {{
             el.addEventListener("click", function(ev) {{
               ev.preventDefault(); ev.stopPropagation();
               var d = parseInt(el.getAttribute("data-range") || "30", 10);
               setRangeDays(d);
             }});
           }});
+
           document.getElementById("ucdpAll").addEventListener("click", function(ev) {{
             ev.preventDefault(); ev.stopPropagation();
             elFrom.value = meta.min_date || "";
@@ -1286,32 +1287,30 @@ def add_ucdp_filter_panel(m, fg_var):
             buildLayer();
           }});
 
-          // collapse toggle
-            // collapse toggle (uniform)
-            var panel = document.getElementById("ucdpFilter");
-            var btn = document.getElementById("ucdpToggle");
+          // collapse toggle (uniform)
+          var panel = document.getElementById("ucdpFilter");
+          var btn = document.getElementById("ucdpToggle");
 
-            function applyState(collapsed){{
+          function applyState(collapsed){{
             panel.classList.toggle("ucdp-collapsed", collapsed);
             btn.textContent = collapsed ? "Show" : "Hide";
             btn.classList.toggle("dock-on", !collapsed);
-            }}
+          }}
 
-            // restore
-            try {{
+          // restore
+          try {{
             var st = localStorage.getItem("ucdp_collapsed");
             applyState(st === "1");
-            }} catch(e) {{
+          }} catch(e) {{
             applyState(false);
-            }}
+          }}
 
-            btn.addEventListener("click", function(ev){{
+          btn.addEventListener("click", function(ev){{
             ev.preventDefault(); ev.stopPropagation();
             var collapsed = panel.classList.contains("ucdp-collapsed") ? false : true;
             applyState(collapsed);
             try {{ localStorage.setItem("ucdp_collapsed", collapsed ? "1" : "0"); }} catch(e) {{}}
-            }});
-
+          }});
 
           // prevent map stealing clicks while on panel
           panel.addEventListener("mouseenter", function() {{
@@ -1354,7 +1353,6 @@ def add_ucdp_filter_panel(m, fg_var):
 
     m.get_root().html.add_child(folium.Element(html))
     print("UCDP filter panel added (top-right).")
-
 
 def _fmt_int(n):
     try:
