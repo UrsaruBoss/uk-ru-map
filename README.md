@@ -1,6 +1,6 @@
 # Ukraine–Russia Conflict Map (Automated & Interactive)
 
-### 🔴 [Click here to open Live Map](https://ursaruboss.github.io/uk-ru-map/)
+### [Click here to open Live Map](https://ursaruboss.github.io/uk-ru-map/)
 
 ## Preview
 
