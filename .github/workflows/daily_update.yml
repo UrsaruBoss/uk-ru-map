@@ -2,7 +2,7 @@ name: Daily Map Update
 
 on:
   schedule:
-    - cron: '0 6 * * *'
+    - cron: '17 6 * * *'
   workflow_dispatch: 
 
 permissions:
